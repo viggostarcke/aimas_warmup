@@ -131,7 +131,23 @@ class State:
             destination_row = agent_row + action.agent_row_delta
             destination_col = agent_col + action.agent_col_delta
             return self.is_free(destination_row, destination_col)
+        
+        elif action.type == ActionType.Push:
+            # Find the box position (in front of the agent)
+            box_row = agent_row + action.agent_row_delta
+            box_col = agent_col + action.agent_col_delta
 
+            # Check if a box exists at (box_row, box_col)
+            if not self.boxes[box_row][box_col]:
+                return False  # No box to push
+
+            # Determine the new box position after pushing
+            new_box_row = box_row + action.box_row_delta
+            new_box_col = box_col + action.box_col_delta
+
+            # Ensure the new box position is free
+            return self.is_free(new_box_row, new_box_col)
+    
         assert False, f"Not implemented for action type {action.type}."
 
     def is_conflicting(self, joint_action: list[Action]) -> bool:

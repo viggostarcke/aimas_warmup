@@ -64,6 +64,9 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
         
         explored.add(s)
         
+        #print(s)
+        #print(frontier)
+        
         for t in s.get_expanded_states():
             if not frontier.contains(t) and t not in explored:
                 frontier.add(t)
