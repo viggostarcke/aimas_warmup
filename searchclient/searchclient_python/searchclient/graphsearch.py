@@ -56,6 +56,7 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
             return None
 
         if frontier.is_empty():
+            print("frontier empty")
             return None
         
         s: State  = frontier.pop()
@@ -63,9 +64,13 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
             return s.extract_plan()
         
         explored.add(s)
+        if False:
+            print("--------------------------")
+            print(f"i: {iterations}. explored: {explored}")
+            print("--------------------------")
         
         #print(s)
-        #print(frontier)
+        print(f"Frontier size: {frontier.size()}")
         
         for t in s.get_expanded_states():
             if not frontier.contains(t) and t not in explored:
