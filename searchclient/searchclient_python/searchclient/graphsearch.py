@@ -47,7 +47,7 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
 
     while True:
         iterations += 1
-        if iterations % 1000 == 0:
+        if iterations % 10 == 0:
             print_search_status(explored, frontier)
 
         if memory.get_usage() > memory.max_usage:
