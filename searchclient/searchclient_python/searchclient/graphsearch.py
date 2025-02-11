@@ -8,7 +8,6 @@ from searchclient.state import State
 
 start_time = time.perf_counter()
 
-
 def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | None:
     output_fixed_solution = False
 
@@ -47,7 +46,7 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
 
     while True:
         iterations += 1
-        if iterations % 1000 == 0:
+        if iterations % 10 == 0:
             print_search_status(explored, frontier)
 
         if memory.get_usage() > memory.max_usage:
@@ -56,25 +55,26 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
             return None
 
         if frontier.is_empty():
+            print("frontier empty")
             return None
         
-        s: State  = frontier.pop()
+        s: State = frontier.pop()
         if s.is_goal_state():
             return s.extract_plan()
         
         explored.add(s)
+        if False:
+            print("--------------------------")
+            print(f"i: {iterations}. explored: {explored}")
+            print("--------------------------")
         
         #print(s)
-        #print(frontier)
+        print(f"Frontier size: {frontier.size()}")
         
         for t in s.get_expanded_states():
             if not frontier.contains(t) and t not in explored:
                 frontier.add(t)
                 
-
-        
-
-
 def print_search_status(explored: set[State], frontier: Frontier) -> None:
     elapsed_time = time.perf_counter() - start_time
     print(

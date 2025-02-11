@@ -57,22 +57,31 @@ class FrontierBFS(Frontier):
 class FrontierDFS(Frontier):
     def __init__(self) -> None:
         super().__init__()
-        raise NotImplementedError
+        self.stack: list[State] = [] # LIFO stack for DFS
+        self.set: set[State] = set() # set of states in the frontier
 
     def add(self, state: State) -> None:
-        raise NotImplementedError
+        """Add a state to the frontier."""
+        self.stack.append(state) # add to the end of the list
+        self.set.add(state) # add to the set
 
     def pop(self) -> State:
-        raise NotImplementedError
+        """Remove the last state in the frontier and return it."""
+        state = self.stack.pop() # choose the last state in the list
+        self.set.remove(state) # remove from the set
+        return state
 
     def is_empty(self) -> bool:
-        raise NotImplementedError
+        """Check if the frontier is empty"""
+        return len(self.stack) == 0 
 
     def size(self) -> int:
-        raise NotImplementedError
+        """Return the size of the frontier"""
+        return len(self.stack)
 
     def contains(self, state: State) -> bool:
-        raise NotImplementedError
+        """Check if the frontier contains a given state"""
+        return state in self.set
 
     def get_name(self) -> str:
         return "depth-first search"
