@@ -37,10 +37,14 @@ class Action(Enum):
     PushW = ("Push(W,W)", ActionType.Push, 0, -1, 0, -1)
 
 
-    PullN = ("Pull(N,S)", ActionType.Pull, -1, 0, 1, 0)  # Agent moves N, box moves S
-    PullS = ("Pull(S,N)", ActionType.Pull, 1, 0, -1, 0)  # Agent moves S, box moves N
-    PullE = ("Pull(E,W)", ActionType.Pull, 0, 1, 0, -1)  # Agent moves E, box moves W
-    PullW = ("Pull(W,E)", ActionType.Pull, 0, -1, 0, 1)  # Agent moves W, box moves E
+    PullN = ("Pull(N,S)", ActionType.Pull, -1, 0, 1, 0)
+    PullS = ("Pull(S,N)", ActionType.Pull, 1, 0, -1, 0)
+    PullE = ("Pull(E,W)", ActionType.Pull, 0, 1, 0, -1)
+    PullW = ("Pull(W,E)", ActionType.Pull, 0, -1, 0, 1)
+    PullWW = ("Pull(W,W)", ActionType.Pull, 0, -1, 0, -1)
+    PullEE = ("Pull(E,E)", ActionType.Pull, 0, 1, 0, 1)
+    PullNN = ("Pull(N,N)", ActionType.Pull, -1, 0, -1, 0)
+    PullSS = ("Pull(S,S)", ActionType.Pull, 1, 0, 1, 0)
 
 
     def __init__(
@@ -58,3 +62,4 @@ class Action(Enum):
         self.agent_col_delta = acd  # vertical displacement agent (-1,0,+1)
         self.box_row_delta = brd  # horisontal displacement box (-1,0,+1)
         self.box_col_delta = bcd  # vertical displacement box (-1,0,+1)
+
