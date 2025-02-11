@@ -1,3 +1,4 @@
+import heapq
 from abc import ABC, abstractmethod
 from collections import deque
 
@@ -90,22 +91,29 @@ class FrontierBestFirst(Frontier):
     def __init__(self, heuristic: Heuristic) -> None:
         super().__init__()
         self.heuristic = heuristic
-        raise NotImplementedError
+        self.frontier = []
+        self.in_frontier = set()
+        self.counter = 0    #  in case two nodes have same cost
 
     def add(self, state: State) -> None:
-        raise NotImplementedError
+        if state not in self.in_frontier:
+            self.in_frontier.add(state)
+            heapq.heappush(self.frontier, (self.heuristic.f(state) , self.counter, state))
+            self.counter += 1
 
     def pop(self) -> State:
-        raise NotImplementedError
+        _, _, state = heapq.heappop(self.frontier)
+        self.in_frontier.remove(state)
+        return state
 
     def is_empty(self) -> bool:
-        raise NotImplementedError
+        return len(self.frontier) == 0
 
     def size(self) -> int:
-        raise NotImplementedError
+        return len(self.frontier)
 
     def contains(self, state: State) -> bool:
-        raise NotImplementedError
+        return state in self.in_frontier
 
     def get_name(self) -> str:
         return f"best-first search using {self.heuristic}"
