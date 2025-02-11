@@ -8,7 +8,6 @@ from searchclient.state import State
 
 start_time = time.perf_counter()
 
-
 def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | None:
     output_fixed_solution = False
 
@@ -59,7 +58,7 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
             print("frontier empty")
             return None
         
-        s: State  = frontier.pop()
+        s: State = frontier.pop()
         if s.is_goal_state():
             return s.extract_plan()
         
@@ -76,10 +75,6 @@ def search(initial_state: State, frontier: Frontier) -> list[list[Action]] | Non
             if not frontier.contains(t) and t not in explored:
                 frontier.add(t)
                 
-
-        
-
-
 def print_search_status(explored: set[State], frontier: Frontier) -> None:
     elapsed_time = time.perf_counter() - start_time
     print(

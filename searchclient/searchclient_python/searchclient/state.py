@@ -41,11 +41,13 @@ class State:
         self.g = 0
         self._hash: int | None = None
 
+    # Below is the original result() function which does not handle push actions correctly.
+    """
     def result(self, joint_action: list[Action]) -> "State":
-        """
+        
         Returns the state resulting from applying joint_action in this state.
         Precondition: Joint action must be applicable and non-conflicting in this state.
-        """
+        
 
         # Copy this state.
         copy_agent_rows = self.agent_rows[:]
@@ -67,6 +69,52 @@ class State:
         copy_state.joint_action = joint_action.copy()
         copy_state.g = self.g + 1
 
+        return copy_state
+    """
+    # The corrected result() function is below:
+    def result(self, joint_action: list[Action]) -> "State":
+        """
+        Returns the state resulting from applying joint_action in this state.
+        Precondition: Joint action must be applicable and non-conflicting in this state.
+        """
+
+        # Copy this state
+        copy_agent_rows = self.agent_rows[:]
+        copy_agent_cols = self.agent_cols[:]
+        copy_boxes = [row[:] for row in self.boxes]
+
+        # Apply each action
+        for agent, action in enumerate(joint_action):
+            if action.type is ActionType.NoOp:
+                pass
+
+            elif action.type is ActionType.Move:
+                copy_agent_rows[agent] += action.agent_row_delta
+                copy_agent_cols[agent] += action.agent_col_delta
+
+            elif action.type is ActionType.Push:
+
+                # Agent makes a move (as part of the push action)
+                copy_agent_rows[agent] += action.agent_row_delta
+                copy_agent_cols[agent] += action.agent_col_delta
+
+                # Current box position
+                box_row = self.agent_rows[agent] + action.agent_row_delta
+                box_col = self.agent_cols[agent] + action.agent_col_delta
+
+                # New box position
+                new_box_row = box_row + action.box_row_delta
+                new_box_col = box_col + action.box_col_delta
+
+                # Update box position
+                copy_boxes[new_box_row][new_box_col] = copy_boxes[box_row][box_col]
+                copy_boxes[box_row][box_col] = ""
+        
+        copy_state = State(copy_agent_rows, copy_agent_cols, copy_boxes)
+        copy_state.parent = self
+        copy_state.joint_action = joint_action.copy()
+        copy_state.g = self.g + 1
+        
         return copy_state
 
     def is_goal_state(self) -> bool:
