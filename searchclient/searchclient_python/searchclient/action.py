@@ -7,6 +7,8 @@ class ActionType(Enum):
     NoOp = 0
     Move = 1
     Push = 2
+    Pull = 3  # Added Pull action type
+
 
 @unique
 class Action(Enum):
@@ -33,6 +35,13 @@ class Action(Enum):
     PushS = ("Push(S,S)", ActionType.Push, 1, 0, 1, 0)
     PushE = ("Push(E,E)", ActionType.Push, 0, 1, 0, 1)
     PushW = ("Push(W,W)", ActionType.Push, 0, -1, 0, -1)
+
+
+    PullN = ("Pull(N,S)", ActionType.Pull, -1, 0, 1, 0)  # Agent moves N, box moves S
+    PullS = ("Pull(S,N)", ActionType.Pull, 1, 0, -1, 0)  # Agent moves S, box moves N
+    PullE = ("Pull(E,W)", ActionType.Pull, 0, 1, 0, -1)  # Agent moves E, box moves W
+    PullW = ("Pull(W,E)", ActionType.Pull, 0, -1, 0, 1)  # Agent moves W, box moves E
+
 
     def __init__(
         self,
