@@ -41,14 +41,15 @@ class Heuristic(ABC):
     def h(self, state: State) -> int:
         """ return the max of every agents placement in the dist maps.
         i.e. the distance of the agent which has the longest route to goal """
-        distances = []
+        max_dist = 0
         for agent, dist_map in self.dist_maps.items():
             curr_row = state.agent_rows[agent]
             curr_col = state.agent_cols[agent]
-            distances.append(dist_map[curr_row][curr_col])
-        if not distances:
-            return 0
-        return max(distances)
+            dist = dist_map[curr_row][curr_col]
+            if dist > max_dist:
+                max_dist = dist
+
+        return max_dist
 
     @abstractmethod
     def f(self, state: State) -> int: ...
