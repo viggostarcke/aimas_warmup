@@ -90,7 +90,7 @@ class State:
         num_agents = len(self.agent_rows)
         applicable_actions = [[action for action in Action if self.is_applicable(agent, action)]
                               for agent in range(num_agents)]
-        print(applicable_actions)
+        #print(applicable_actions)
         joint_action = [Action.NoOp] * num_agents
         actions_permutation = [0] * num_agents
         expanded_states = []
