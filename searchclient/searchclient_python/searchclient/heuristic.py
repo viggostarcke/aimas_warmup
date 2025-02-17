@@ -16,7 +16,12 @@ class Heuristic(ABC):
 
         self.goal_dist_maps = {}  # dict: (goal_row, goal_col) -> 2D list of distances
         for (goal_row, goal_col, _) in self.box_goals:
-            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
+            #self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
+            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_manhattan_dist_map(goal_row, goal_col)
+
+    def _compute_manhattan_dist_map(self, goal_row, goal_col):
+        return [[abs(row - goal_row) + abs(col - goal_col) for col in range(self.cols)]
+                for row in range(self.rows)]
 
 
     def _compute_bfs_dist_map(self, state: State, goal_row, goal_col):
