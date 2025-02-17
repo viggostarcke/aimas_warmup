@@ -53,7 +53,8 @@ class State:
                 copy_boxes[box_row][box_col] = None
 
             elif action.type is ActionType.Pull:
-                box_row, box_col = agent_row - action.agent_row_delta, agent_col - action.agent_col_delta
+                #box_row, box_col = agent_row - action.agent_row_delta, agent_col - action.agent_col_delta
+                box_row, box_col = agent_row - action.box_row_delta, agent_col - action.box_col_delta
 
                 copy_agent_rows[agent] += action.agent_row_delta
                 copy_agent_cols[agent] += action.agent_col_delta
