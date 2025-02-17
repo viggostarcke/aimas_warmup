@@ -6,50 +6,51 @@ from searchclient.state import State
 
 class Heuristic(ABC):
     def __init__(self, initial_state: State) -> None:
-        self.goals = {}  # dict: agent id -> (goal_row_idx, goal_col_idx)
+        self.rows = len(initial_state.walls)
+        self.cols = len(initial_state.walls[0])
+        self.box_goals = []  # list of box goals: (goal_row, goal_col, goal_letter)
         for row_idx, row in enumerate(initial_state.goals):
             for col_idx, cell in enumerate(row):
-                if cell.isdigit():
-                    agent_id = int(cell)
-                    self.goals[agent_id] = (row_idx, col_idx)
+                if cell.isalpha() and cell.isupper():
+                    self.box_goals.append((row_idx, col_idx, cell))
 
-        self.rows = len(initial_state.walls[0])
-        self.cols = len(initial_state.walls[1])
-        self.dist_maps = {}  # dict: agent id -> 2D list of distances
-        for agent, (goal_row, goal_col) in self.goals.items():
-            self.dist_maps[agent] = self._compute_bfs_dist_map(goal_row, goal_col)
+        self.goal_dist_maps = {}  # dict: (goal_row, goal_col) -> 2D list of distances
+        for (goal_row, goal_col, _) in self.box_goals:
+            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
 
-    def _compute_bfs_dist_map(self, goal_row: int, goal_col: int):
-        """ compute a 2D dist map: every cell shows dist to goal using bfs. """
+
+    def _compute_bfs_dist_map(self, state: State, goal_row, goal_col):
         distance = [[float('inf')] * self.cols for _ in range(self.rows)]
         queue = collections.deque()
+
         distance[goal_row][goal_col] = 0
         queue.append((goal_row, goal_col))
+
         while queue:
             row, col = queue.popleft()
             dist = distance[row][col]
             for dist_row, dist_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 neighbor_row, neighbor_col = row + dist_row, col + dist_col
                 if 0 <= neighbor_row < self.rows and 0 <= neighbor_col < self.cols:
-                    if not State.walls[neighbor_row][neighbor_col]:
+                    if not state.walls[neighbor_row][neighbor_col]:
                         if distance[neighbor_row][neighbor_col] > dist + 1:
                             distance[neighbor_row][neighbor_col] = dist + 1
                             queue.append((neighbor_row, neighbor_col))
 
         return distance
 
-    def h(self, state: State) -> int:
-        """ return the max of every agents placement in the dist maps.
-        i.e. the distance of the agent which has the longest route to goal """
-        max_dist = 0
-        for agent, dist_map in self.dist_maps.items():
-            curr_row = state.agent_rows[agent]
-            curr_col = state.agent_cols[agent]
-            dist = dist_map[curr_row][curr_col]
-            if dist > max_dist:
-                max_dist = dist
 
-        return max_dist
+    def h(self, state: State) -> int:
+        total_distance = 0
+
+        for (goal_row, goal_col, goal_letter) in self.box_goals:
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    if state.boxes[row][col] == goal_letter:
+                        dist = self.goal_dist_maps[(goal_row, goal_col)][row][col]
+                        total_distance += dist
+
+        return total_distance
 
     @abstractmethod
     def f(self, state: State) -> int: ...
@@ -127,3 +128,114 @@ class HeuristicGreedy(Heuristic):
 #           summed_manhattan_dist += abs(curr_row - goal_row) + abs(curr_col - goal_col)
 #
 #       return summed_manhattan_dist
+
+# DistMap:
+#     def __init__(self, initial_state: State) -> None:
+#         self.goals = {}  # dict: agent id -> (goal_row_idx, goal_col_idx)
+#         for row_idx, row in enumerate(initial_state.goals):
+#             for col_idx, cell in enumerate(row):
+#                 if cell.isdigit():
+#                     agent_id = int(cell)
+#                     self.goals[agent_id] = (row_idx, col_idx)
+#
+#         self.rows = len(initial_state.walls[0])
+#         self.cols = len(initial_state.walls[1])
+#         self.dist_maps = {}  # dict: agent id -> 2D list of distances
+#         for agent, (goal_row, goal_col) in self.goals.items():
+#             self.dist_maps[agent] = self._compute_bfs_dist_map(goal_row, goal_col)
+#
+#     def _compute_bfs_dist_map(self, goal_row: int, goal_col: int):
+#         """ compute a 2D dist map: every cell shows dist to goal using bfs. """
+#         distance = [[float('inf')] * self.cols for _ in range(self.rows)]
+#         queue = collections.deque()
+#         distance[goal_row][goal_col] = 0
+#         queue.append((goal_row, goal_col))
+#         while queue:
+#             row, col = queue.popleft()
+#             dist = distance[row][col]
+#             for dist_row, dist_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+#                 neighbor_row, neighbor_col = row + dist_row, col + dist_col
+#                 if 0 <= neighbor_row < self.rows and 0 <= neighbor_col < self.cols:
+#                     if not State.walls[neighbor_row][neighbor_col]:
+#                         if distance[neighbor_row][neighbor_col] > dist + 1:
+#                             distance[neighbor_row][neighbor_col] = dist + 1
+#                             queue.append((neighbor_row, neighbor_col))
+#
+#         return distance
+#
+#     def h(self, state: State) -> int:
+#         """ return the max of every agents placement in the dist maps.
+#         i.e. the distance of the agent which has the longest route to goal """
+#         max_dist = 0
+#         for agent, dist_map in self.dist_maps.items():
+#             curr_row = state.agent_rows[agent]
+#             curr_col = state.agent_cols[agent]
+#             dist = dist_map[curr_row][curr_col]
+#             if dist > max_dist:
+#                 max_dist = dist
+#
+#         return max_dist
+
+# GoalCount boxes:
+#     def __init__(self, initial_state: State) -> None:
+#         self.box_goals = []  # list of box goals: (goal_row, goal_col, letter)
+#         for row_idx, row in enumerate(initial_state.goals):
+#             for col_idx, cell in enumerate(row):
+#                 if cell.isalpha() and cell.isupper():
+#                     self.box_goals.append((row_idx, col_idx, cell))
+#
+#     def h(self, state: State) -> int:
+#         goal_count = 0
+#         for (goal_row, goal_col, letter) in self.box_goals:
+#             if state.boxes[goal_row][goal_col] != letter:
+#                 goal_count += 1
+#
+#         return goal_count
+
+# DistMap boxes:
+# def __init__(self, initial_state: State) -> None:
+#     self.rows = len(initial_state.walls)
+#     self.cols = len(initial_state.walls[0])
+#     self.box_goals = []  # list of box goals: (goal_row, goal_col, goal_letter)
+#     for row_idx, row in enumerate(initial_state.goals):
+#         for col_idx, cell in enumerate(row):
+#             if cell.isalpha() and cell.isupper():
+#                 self.box_goals.append((row_idx, col_idx, cell))
+#
+#     self.goal_dist_maps = {}  # dict: (goal_row, goal_col) -> 2D list of distances
+#     for (goal_row, goal_col, _) in self.box_goals:
+#         self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
+#
+#
+# def _compute_bfs_dist_map(self, state: State, goal_row, goal_col):
+#     distance = [[float('inf')] * self.cols for _ in range(self.rows)]
+#     queue = collections.deque()
+#
+#     distance[goal_row][goal_col] = 0
+#     queue.append((goal_row, goal_col))
+#
+#     while queue:
+#         row, col = queue.popleft()
+#         dist = distance[row][col]
+#         for dist_row, dist_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+#             neighbor_row, neighbor_col = row + dist_row, col + dist_col
+#             if 0 <= neighbor_row < self.rows and 0 <= neighbor_col < self.cols:
+#                 if not state.walls[neighbor_row][neighbor_col]:
+#                     if distance[neighbor_row][neighbor_col] > dist + 1:
+#                         distance[neighbor_row][neighbor_col] = dist + 1
+#                         queue.append((neighbor_row, neighbor_col))
+#
+#     return distance
+#
+#
+# def h(self, state: State) -> int:
+#     total_distance = 0
+#
+#     for (goal_row, goal_col, goal_letter) in self.box_goals:
+#         for row in range(self.rows):
+#             for col in range(self.cols):
+#                 if state.boxes[row][col] == goal_letter:
+#                     dist = self.goal_dist_maps[(goal_row, goal_col)][row][col]
+#                     total_distance += dist
+#
+#     return total_distance
