@@ -72,8 +72,6 @@ class Heuristic(ABC):
 
         return total_box_to_goal + min_agent_to_box_dist
 
-        return total_box_to_goal
-
     @abstractmethod
     def f(self, state: State) -> int: ...
 
