@@ -70,3 +70,6 @@ class Action(Enum):
         self.agent_col_delta = acd  # Agent movement delta
         self.box_row_delta = brd  # Box movement delta
         self.box_col_delta = bcd  # Box movement delta
+
+    def is_valid_interaction(agent, box):
+        return agent.color == box.color

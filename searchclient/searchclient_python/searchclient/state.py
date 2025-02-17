@@ -117,6 +117,7 @@ class State:
         Determines if an action is applicable in the current state.
         """
         agent_row, agent_col = self.agent_rows[agent], self.agent_cols[agent]
+        agent_color = State.agent_colors[agent]
 
         if action.type is ActionType.NoOp:
             return True
@@ -127,7 +128,13 @@ class State:
         if action.type is ActionType.Push:
             box_row, box_col = agent_row + action.agent_row_delta, agent_col + action.agent_col_delta
 
+
             if not self.boxes[box_row][box_col]:
+                return False
+
+            box_index = self.boxes[box_row][box_col]
+            box_color = State.box_colors[ord(box_index) - ord ('A')] if box_index is not None else None
+            if box_color != agent_color:
                 return False
 
             return self.is_free(box_row + action.box_row_delta, box_col + action.box_col_delta)
@@ -137,6 +144,11 @@ class State:
             box_row, box_col = agent_row - action.box_row_delta, agent_col - action.box_col_delta
 
             if not self.boxes[box_row][box_col]:
+                return False
+
+            box_index = self.boxes[box_row][box_col]
+            box_color = State.box_colors[ord(box_index) - ord ('A')] if box_index is not None else None
+            if box_color != agent_color:
                 return False
 
             return self.is_free(new_agent_row, new_agent_col)

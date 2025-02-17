@@ -2,6 +2,8 @@ import collections
 from abc import ABC, abstractmethod
 
 from searchclient.state import State
+from searchclient.color import Color
+
 
 
 class Heuristic(ABC):
@@ -16,8 +18,20 @@ class Heuristic(ABC):
 
         self.goal_dist_maps = {}  # dict: (goal_row, goal_col) -> 2D list of distances
         for (goal_row, goal_col, _) in self.box_goals:
-            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
+            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_manhattan_dist_map(goal_row, goal_col)
 
+
+        self.agent_colors = initial_state.agent_colors
+        self.box_colors = {(r, c): initial_state.box_colors[ord(initial_state.boxes[r][c]) - ord('A')]
+                           for r in range(self.rows) for c in range(self.cols) if initial_state.boxes[r][c]}
+
+        self.color_priorities = {color: idx for idx, color in enumerate(Color)}
+        # self.agent_colors = initial_state.agent_colors
+        # self.box_colors = {(r, c): initial_state.box_colors[r][c] for r in range(self.rows) for c in range(self.cols) if initial_state.boxes[r][c]}
+        # self.color_priorities = {color: idx for idx, color in enumerate(Color)}
+    def _compute_manhattan_dist_map(self, goal_row, goal_col):
+        return [[abs(row - goal_row) + abs(col - goal_col) for col in range(self.cols)]
+                for row in range(self.rows)]
 
     def _compute_bfs_dist_map(self, state: State, goal_row, goal_col):
         distance = [[float('inf')] * self.cols for _ in range(self.rows)]
@@ -50,6 +64,19 @@ class Heuristic(ABC):
                         dist = self.goal_dist_maps[(goal_row, goal_col)][row][col]
                         total_distance += dist
 
+        for agent_id, (agent_r, agent_c) in enumerate(zip(state.agent_rows, state.agent_cols)):
+            agent_color = self.agent_colors[agent_id]
+            agent_priority = self.color_priorities.get(agent_color, float('inf')) if agent_color else float('inf')
+            min_dist = float('inf')
+
+            for (r, c), box_color in self.box_colors.items():
+                if box_color == agent_color:
+                    dist = abs(agent_r - r) + abs(agent_c - c)
+
+                    weighted_dist = dist - (agent_priority * 0.1)  # Higher priority agents get slight advantage
+                    min_dist = min(min_dist, weighted_dist) + 1
+            if min_dist != float('inf'):
+                total_distance += min_dist
         return total_distance
 
     @abstractmethod
