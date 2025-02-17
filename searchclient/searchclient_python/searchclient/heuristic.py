@@ -47,14 +47,18 @@ class Heuristic(ABC):
 
     def h(self, state: State) -> int:
         total_box_to_goal = 0
-
+        # for each box goal: compute the minimal cost of boxes that match its letter
         for (goal_row, goal_col, goal_letter) in self.box_goals:
+            best_cost = float('inf')
             for row in range(self.rows):
                 for col in range(self.cols):
                     if state.boxes[row][col] == goal_letter:
-                        dist = self.goal_dist_maps[(goal_row, goal_col)][row][col]
-                        total_box_to_goal += dist
+                        cost = self.goal_dist_maps[(goal_row, goal_col)][row][col]
+                        if cost < best_cost:
+                            best_cost = cost
+            total_box_to_goal += best_cost
 
+        # compute manhattan dist from agent to the closest box
         agent_row = state.agent_rows[0]
         agent_col = state.agent_cols[0]
         min_agent_to_box_dist = float('inf')
@@ -62,13 +66,13 @@ class Heuristic(ABC):
             for row in range(self.rows):
                 for col in range(self.cols):
                     if state.boxes[row][col] == goal_letter:
-                        dist_to_box = self.goal_dist_maps[(goal_row, goal_col)][row][col]
-                        if dist_to_box > 0:
-                            manhattan_dist_agent_to_box = abs(agent_row - row) + abs(agent_col - col)
-                            if manhattan_dist_agent_to_box < min_agent_to_box_dist:
-                                min_agent_to_box_dist = manhattan_dist_agent_to_box
+                        cost = self.goal_dist_maps[(goal_row, goal_col)][row][col]
+                        if cost > 0:  # if cost = 0, box is at its goal
+                            manhattan_dist = abs(agent_row - row) + abs(agent_col - col)
+                            if manhattan_dist < min_agent_to_box_dist:
+                                min_agent_to_box_dist = manhattan_dist
         if min_agent_to_box_dist == float('inf'):
-            min_agent_to_box_dist = 0  # assuming no box for level
+            min_agent_to_box_dist = 0
 
         return total_box_to_goal + min_agent_to_box_dist
 
