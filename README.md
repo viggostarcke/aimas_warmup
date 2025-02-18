@@ -110,16 +110,16 @@ distmap boxes:
 SAsoko_128: states generated <10k
 
 
-### Exercise 7: MAGoalCount
+### Exercise 7: MADistMap
 | Level      | Eval   |  Heuristic  | States Generated | Time/s | Solution length |
 |------------|--------|-------------|------------------|--------|-----------------|
-| ex7Easy    | Greedy | MAGoalCount | <10,000          | 0.009s | 15              |
+| ex7Easy    | Greedy | MADistMap   | <10,000          | 0.009s | 15              |
 | ex7Easy    | BFS    |             | <10,000          | 0.355s | 10              |
 | ex7Easy    | DFS    |             | 1,131,876        | ~54.6s | no solution     |
-| ex7Medium  | Greedy | MAGoalCount | <10,000          | 0.042s | 20              |
+| ex7Medium  | Greedy | MADistMap   | <10,000          | 0.042s | 20              |
 | ex7Medium  | BFS    |             | 1,084,054        | ~59.4s | no solution     |
 | ex7Medium  | DFS    |             | 1,068,276        | ~24.5s | no solution     |
-| MAExample  | Greedy | MAGoalCount | <10,000          | 0.433s | 37              |
+| MAExample  | Greedy | MADistMap   | <10,000          | 0.433s | 37              |
 | MAExample  | BFS    |             | 117,395          | ~11.0s | 30              |
 | MAExample  | DFS    |             | <10,000          | 0.066s | 286             |
 
