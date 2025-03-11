@@ -16,7 +16,12 @@ class Heuristic(ABC):
 
         self.goal_dist_maps = {}  # dict: (goal_row, goal_col) -> 2D list of distances
         for (goal_row, goal_col, _) in self.box_goals:
-            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
+            #self.goal_dist_maps[(goal_row, goal_col)] = self._compute_bfs_dist_map(initial_state, goal_row, goal_col)
+            self.goal_dist_maps[(goal_row, goal_col)] = self._compute_manhattan_dist_map(goal_row, goal_col)
+
+    def _compute_manhattan_dist_map(self, goal_row, goal_col):
+        return [[abs(row - goal_row) + abs(col - goal_col) for col in range(self.cols)]
+                for row in range(self.rows)]
 
 
     def _compute_bfs_dist_map(self, state: State, goal_row, goal_col):
@@ -41,16 +46,35 @@ class Heuristic(ABC):
 
 
     def h(self, state: State) -> int:
-        total_distance = 0
+        total_box_to_goal = 0
+        # for each box goal: compute the minimal cost of boxes that match its letter
+        for (goal_row, goal_col, goal_letter) in self.box_goals:
+            best_cost = float('inf')
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    if state.boxes[row][col] == goal_letter:
+                        cost = self.goal_dist_maps[(goal_row, goal_col)][row][col]
+                        if cost < best_cost:
+                            best_cost = cost
+            total_box_to_goal += best_cost
 
+        # compute manhattan dist from agent to the closest box
+        agent_row = state.agent_rows[0]
+        agent_col = state.agent_cols[0]
+        min_agent_to_box_dist = float('inf')
         for (goal_row, goal_col, goal_letter) in self.box_goals:
             for row in range(self.rows):
                 for col in range(self.cols):
                     if state.boxes[row][col] == goal_letter:
-                        dist = self.goal_dist_maps[(goal_row, goal_col)][row][col]
-                        total_distance += dist
+                        cost = self.goal_dist_maps[(goal_row, goal_col)][row][col]
+                        if cost > 0:  # if cost = 0, box is at its goal
+                            manhattan_dist = abs(agent_row - row) + abs(agent_col - col)
+                            if manhattan_dist < min_agent_to_box_dist:
+                                min_agent_to_box_dist = manhattan_dist
+        if min_agent_to_box_dist == float('inf'):
+            min_agent_to_box_dist = 0
 
-        return total_distance
+        return total_box_to_goal + min_agent_to_box_dist
 
     @abstractmethod
     def f(self, state: State) -> int: ...
